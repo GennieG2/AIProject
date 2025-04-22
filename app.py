@@ -7,6 +7,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.metrics import accuracy_score, classification_report
 from sklearn.tree import plot_tree
 import matplotlib.pyplot as plt
+from sklearn.model_selection import GridSearchCV
 
 # Fetch dataset 
 chronic_kidney_disease = fetch_ucirepo(id=336) 
@@ -87,3 +88,26 @@ plt.figure(figsize=(12, 8))
 plot_tree(dt_classifier, filled=True, feature_names=X_encoded.columns, class_names=np.unique(y_encoded).astype(str), rounded=True)
 plt.title("Decision Tree Visualization")
 plt.show()
+
+# --- Hyperparameter tuning using GridSearchCV ---
+param_grid = {
+    'max_depth': [3, 5, 10, None],
+    'min_samples_split': [2, 5, 10],
+    'criterion': ['gini', 'entropy']
+}
+
+grid_search = GridSearchCV(DecisionTreeClassifier(random_state=42), param_grid, cv=2, scoring='accuracy')
+grid_search.fit(X_train, y_train)
+
+# Use the best estimator found
+best_dt = grid_search.best_estimator_
+print("\nBest Parameters:", grid_search.best_params_)
+
+# Predictions using the best model
+y_pred_best = best_dt.predict(X_test)
+
+# Evaluate the tuned model
+tuned_accuracy = accuracy_score(y_test, y_pred_best)
+print(f"Tuned Accuracy: {tuned_accuracy * 100:.2f}%")
+print("\nTuned Classification Report:")
+print(classification_report(y_test, y_pred_best, zero_division=1))
