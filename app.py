@@ -33,10 +33,24 @@ print("Categorical columns:", categorical_cols)
 ordinal_cols = ['sg', 'al', 'su', 'appet', 'pe', 'ane']
 nominal_cols = [col for col in categorical_cols if col not in ordinal_cols]
 
+
 # Label encode ordinal variables
 label_encoder = LabelEncoder()
 for col in ordinal_cols:
     X.loc[:, col] = label_encoder.fit_transform(X[col])
+
+# Strip whitespace and standardize the target class
+y['class'] = y['class'].str.strip().str.lower()
+
+# Check unique values after cleanup
+print("Cleaned class values:", y['class'].unique())
+
+# Encode target again
+y_encoded = label_encoder.fit_transform(y['class'])
+
+# Check distribution again
+print("Class distribution after cleaning:", np.unique(y_encoded, return_counts=True))
+
 
 # One-hot encode nominal variables
 X_encoded = pd.get_dummies(X, columns=nominal_cols, drop_first=True)
@@ -89,25 +103,4 @@ plot_tree(dt_classifier, filled=True, feature_names=X_encoded.columns, class_nam
 plt.title("Decision Tree Visualization")
 plt.show()
 
-# --- Hyperparameter tuning using GridSearchCV ---
-param_grid = {
-    'max_depth': [3, 5, 10, None],
-    'min_samples_split': [2, 5, 10],
-    'criterion': ['gini', 'entropy']
-}
-
-grid_search = GridSearchCV(DecisionTreeClassifier(random_state=42), param_grid, cv=2, scoring='accuracy')
-grid_search.fit(X_train, y_train)
-
-# Use the best estimator found
-best_dt = grid_search.best_estimator_
-print("\nBest Parameters:", grid_search.best_params_)
-
-# Predictions using the best model
-y_pred_best = best_dt.predict(X_test)
-
-# Evaluate the tuned model
-tuned_accuracy = accuracy_score(y_test, y_pred_best)
-print(f"Tuned Accuracy: {tuned_accuracy * 100:.2f}%")
-print("\nTuned Classification Report:")
-print(classification_report(y_test, y_pred_best, zero_division=1))
+print("Class distribution:", np.unique(y_encoded, return_counts=True))
