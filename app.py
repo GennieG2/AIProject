@@ -33,23 +33,25 @@ print("Categorical columns:", categorical_cols)
 ordinal_cols = ['sg', 'al', 'su', 'appet', 'pe', 'ane']
 nominal_cols = [col for col in categorical_cols if col not in ordinal_cols]
 
-
 # Label encode ordinal variables
 label_encoder = LabelEncoder()
 for col in ordinal_cols:
     X.loc[:, col] = label_encoder.fit_transform(X[col])
 
+y_encoded = label_encoder.fit_transform(y['class'])
+print("\nClass distribution after cleaning:", np.unique(y_encoded, return_counts=True))
+
 # Strip whitespace and standardize the target class
 y['class'] = y['class'].str.strip().str.lower()
 
 # Check unique values after cleanup
-print("Cleaned class values:", y['class'].unique())
+print("\nCleaned class values:", y['class'].unique())
 
 # Encode target again
 y_encoded = label_encoder.fit_transform(y['class'])
 
 # Check distribution again
-print("Class distribution after cleaning:", np.unique(y_encoded, return_counts=True))
+print("\nClass distribution after cleaning:", np.unique(y_encoded, return_counts=True))
 
 
 # One-hot encode nominal variables
